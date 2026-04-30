@@ -1,0 +1,37 @@
+version: '3.8'
+
+services:
+  picpilot:
+    build: .
+    container_name: picpilot
+    ports:
+      - "5000:5000"
+    environment:
+      - PICPILOT_PORT=5000
+      - PICPILOT_DEBUG=false
+      - PICPILOT_MAX_WORKERS=16
+    volumes:
+      - ./downloads:/app/downloaded_images
+      - ./logs:/app/logs
+      - ./tasks.db:/app/tasks.db
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:5000/health"]
+      interval: 30s
+      timeout: 3s
+      retries: 3
+      start_period: 5s
+
+  redis:
+    image: redis:7-alpine
+    container_name: picpilot-redis
+    ports:
+      - "6379:6379"
+    volumes:
+      - ./redis-data:/data
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 10s
+      timeout: 3s
+      retries: 3

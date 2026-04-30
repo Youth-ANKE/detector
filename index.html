@@ -1,0 +1,1955 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>PicPilot - 智能网页资源批量下载工具</title>
+<style>
+/* ═══════════════════════════════════════════════════
+   Variables
+   ═══════════════════════════════════════════════════ */
+:root {
+  --c-bg: #f0f2f5;
+  --c-surface: #ffffff;
+  --c-primary: #6366f1;
+  --c-primary-hover: #4f46e5;
+  --c-primary-subtle: #eef2ff;
+  --c-success: #10b981;
+  --c-success-bg: #ecfdf5;
+  --c-danger: #ef4444;
+  --c-danger-bg: #fef2f2;
+  --c-warning: #f59e0b;
+  --c-warning-bg: #fffbeb;
+  --c-info: #3b82f6;
+  --c-text: #1e293b;
+  --c-text-secondary: #64748b;
+  --c-text-muted: #94a3b8;
+  --c-border: #e2e8f0;
+  --c-purple: #8b5cf6;
+  --c-blue: #3b82f6;
+  --c-green: #10b981;
+  --c-orange: #f59e0b;
+  --c-pink: #ec4899;
+  --radius: 14px;
+  --radius-sm: 10px;
+  --shadow: 0 1px 3px rgba(0,0,0,0.06), 0 1px 2px rgba(0,0,0,0.04);
+  --shadow-md: 0 4px 12px rgba(0,0,0,0.08);
+  --font-mono: 'SF Mono', 'Consolas', 'Courier New', monospace;
+}
+
+* { box-sizing: border-box; margin: 0; padding: 0; }
+
+body {
+  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
+  background: var(--c-bg);
+  color: var(--c-text);
+  line-height: 1.5;
+  min-height: 100vh;
+}
+
+/* ═══════════════════════════════════════════════════
+   Header
+   ═══════════════════════════════════════════════════ */
+.app-header {
+  background: var(--c-surface);
+  border-bottom: 1px solid var(--c-border);
+  position: sticky;
+  top: 0;
+  z-index: 100;
+  box-shadow: 0 1px 4px rgba(0,0,0,0.04);
+}
+
+.header-inner { max-width: 960px; margin: 0 auto; padding: 18px 24px 14px; }
+.header-top { display: flex; justify-content: space-between; align-items: center; }
+.header-brand { display: flex; align-items: center; gap: 14px; }
+.header-logo {
+  width: 44px; height: 44px;
+  background: linear-gradient(135deg, var(--c-primary), #818cf8);
+  border-radius: 12px;
+  display: flex; align-items: center; justify-content: center;
+  font-size: 22px; color: #fff; box-shadow: 0 2px 8px rgba(99,102,241,0.3);
+}
+.header-title h1 { font-size: 22px; font-weight: 700; letter-spacing: -0.3px; }
+.header-title span { font-size: 12px; color: var(--c-text-muted); display: block; margin-top: 1px; }
+.header-actions { display: flex; gap: 8px; flex-wrap: wrap; }
+.header-badge {
+  font-size: 11px; padding: 4px 10px; border-radius: 20px;
+  background: var(--c-primary-subtle); color: var(--c-primary); font-weight: 500;
+  white-space: nowrap;
+}
+
+/* ═══════════════════════════════════════════════════
+   Main
+   ═══════════════════════════════════════════════════ */
+.app-main { max-width: 960px; margin: 0 auto; padding: 0 24px 40px; }
+
+/* ═══════════════════════════════════════════════════
+   Tabs
+   ═══════════════════════════════════════════════════ */
+.tabs-wrapper { position: sticky; top: 74px; z-index: 99; background: var(--c-bg); padding: 16px 0 8px; }
+.tabs-nav {
+  display: flex; gap: 2px; background: var(--c-surface);
+  padding: 4px; border-radius: 12px; box-shadow: var(--shadow); border: 1px solid var(--c-border);
+  overflow-x: auto;
+}
+.tabs-nav button {
+  flex: 1; border: none; background: transparent; padding: 10px 10px; font-size: 13px;
+  font-weight: 500; color: var(--c-text-secondary); cursor: pointer;
+  border-radius: 10px; transition: all 0.2s; white-space: nowrap;
+  display: flex; align-items: center; justify-content: center; gap: 4px;
+}
+.tabs-nav button .tab-icon { font-size: 15px; }
+.tabs-nav button .tab-badge {
+  font-size: 9px; font-weight: 600; background: var(--c-warning); color: #fff;
+  padding: 1px 5px; border-radius: 6px; margin-left: 2px;
+}
+.tabs-nav button:hover { background: var(--c-bg); color: var(--c-text); }
+.tabs-nav button.active { background: var(--c-primary); color: #fff; box-shadow: 0 2px 6px rgba(99,102,241,0.25); }
+
+/* ═══════════════════════════════════════════════════
+   Card
+   ═══════════════════════════════════════════════════ */
+.card {
+  background: var(--c-surface); border-radius: var(--radius);
+  box-shadow: var(--shadow); border: 1px solid var(--c-border);
+  padding: 26px 28px; margin-bottom: 18px;
+}
+.card-header { display: flex; align-items: center; gap: 14px; margin-bottom: 20px; padding-bottom: 16px; border-bottom: 1px solid var(--c-border); }
+.card-icon {
+  width: 44px; height: 44px; border-radius: 12px;
+  display: flex; align-items: center; justify-content: center;
+  font-size: 20px; flex-shrink: 0;
+}
+.card-icon.purple { background: var(--c-primary-subtle); }
+.card-icon.blue { background: #eff6ff; }
+.card-icon.green { background: var(--c-success-bg); }
+.card-icon.orange { background: var(--c-warning-bg); }
+.card-icon.pink { background: #fdf2f8; }
+.card-icon.cyan { background: #ecfeff; }
+.card-header h2 { font-size: 17px; font-weight: 600; }
+.card-desc { font-size: 13px; color: var(--c-text-secondary); display: block; margin-top: 2px; }
+.card-tag {
+  margin-left: auto; font-size: 10px; font-weight: 600;
+  padding: 3px 9px; border-radius: 20px; white-space: nowrap;
+  background: var(--c-primary-subtle); color: var(--c-primary); flex-shrink: 0;
+}
+
+/* ═══════════════════════════════════════════════════
+   Form elements
+   ═══════════════════════════════════════════════════ */
+.form-group { margin-bottom: 14px; flex: 1; min-width: 0; }
+.form-label { display: block; font-size: 13px; font-weight: 500; margin-bottom: 5px; }
+.label-hint { font-size: 11px; color: var(--c-text-muted); font-weight: 400; }
+.input, .select, .textarea {
+  width: 100%; padding: 9px 12px; border: 1px solid var(--c-border);
+  border-radius: var(--radius-sm); font-size: 13px; font-family: inherit;
+  background: var(--c-surface); color: var(--c-text); transition: border 0.2s;
+}
+.input:focus, .select:focus, .textarea:focus { outline: none; border-color: var(--c-primary); box-shadow: 0 0 0 3px rgba(99,102,241,0.12); }
+.textarea { resize: vertical; min-height: 72px; font-family: var(--font-mono); font-size: 12px; }
+.select { cursor: pointer; }
+
+/* ═══════════════════════════════════════════════════
+   Buttons
+   ═══════════════════════════════════════════════════ */
+.btn {
+  display: inline-flex; align-items: center; justify-content: center; gap: 6px;
+  padding: 9px 18px; border: 1px solid transparent; border-radius: var(--radius-sm);
+  font-size: 13px; font-weight: 500; cursor: pointer; transition: all 0.2s;
+  white-space: nowrap; font-family: inherit;
+}
+.btn:disabled { opacity: 0.5; cursor: not-allowed; }
+.btn-primary { background: var(--c-primary); color: #fff; border-color: var(--c-primary); }
+.btn-primary:hover:not(:disabled) { background: var(--c-primary-hover); }
+.btn-success { background: var(--c-success); color: #fff; border-color: var(--c-success); }
+.btn-success:hover:not(:disabled) { background: #059669; }
+.btn-outline { background: transparent; color: var(--c-text); border-color: var(--c-border); }
+.btn-outline:hover:not(:disabled) { background: var(--c-bg); border-color: var(--c-text-secondary); }
+.btn-ghost { background: transparent; color: var(--c-text-muted); border: none; cursor: pointer; padding: 4px 6px; border-radius: 6px; }
+.btn-ghost:hover { color: var(--c-danger); background: var(--c-danger-bg); }
+.btn-sm { padding: 6px 12px; font-size: 12px; }
+.btn-block { width: 100%; }
+.btn-group { display: flex; gap: 8px; align-items: center; flex-wrap: wrap; }
+
+/* ═══════════════════════════════════════════════════
+   Row
+   ═══════════════════════════════════════════════════ */
+.row { display: grid; grid-template-columns: 1fr auto; gap: 12px; align-items: start; }
+.row-2 { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
+.row-3 { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 10px; }
+.row-4 { display: grid; grid-template-columns: 1fr 1fr 1fr 1fr; gap: 10px; }
+
+/* ═══════════════════════════════════════════════════
+   Section
+   ═══════════════════════════════════════════════════ */
+.section-divider {
+  font-size: 12px; font-weight: 600; color: var(--c-text-secondary);
+  padding: 8px 0 4px; border-top: 1px solid var(--c-border); margin-top: 4px;
+}
+
+/* ═══════════════════════════════════════════════════
+   Info box
+   ═══════════════════════════════════════════════════ */
+.info-box {
+  display: flex; gap: 8px; align-items: flex-start;
+  font-size: 12px; color: var(--c-text-secondary); background: var(--c-bg);
+  padding: 10px 14px; border-radius: var(--radius-sm); border: 1px solid var(--c-border);
+  margin-bottom: 16px; line-height: 1.5;
+}
+.info-icon { flex-shrink: 0; font-size: 14px; }
+
+/* ═══════════════════════════════════════════════════
+   Progress
+   ═══════════════════════════════════════════════════ */
+.progress-area { margin-top: 14px; display: none; }
+.progress-area.active { display: block; }
+.progress-bar-wrap { height: 6px; background: var(--c-bg); border-radius: 3px; overflow: hidden; }
+.progress-bar-fill { height: 100%; background: linear-gradient(90deg, var(--c-primary), #818cf8); border-radius: 3px; transition: width 0.4s; width: 0%; }
+.progress-info { display: flex; align-items: center; gap: 10px; margin-top: 8px; font-size: 12px; }
+.progress-status { flex: 1; color: var(--c-text-secondary); overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.progress-pct { font-weight: 600; font-variant-numeric: tabular-nums; min-width: 36px; text-align: right; }
+.progress-badge { font-size: 10px; padding: 2px 8px; border-radius: 10px; font-weight: 600; }
+.progress-badge.queued { background: var(--c-warning-bg); color: var(--c-warning); }
+.progress-badge.running { background: var(--c-primary-subtle); color: var(--c-primary); }
+.progress-badge.done { background: var(--c-success-bg); color: var(--c-success); }
+.progress-badge.error { background: var(--c-danger-bg); color: var(--c-danger); }
+.progress-stats { display: grid; grid-template-columns: repeat(3, 1fr); gap: 8px; margin-top: 10px; }
+.progress-stat { background: var(--c-bg); padding: 8px 10px; border-radius: var(--radius-sm); text-align: center; }
+.ps-label { font-size: 11px; color: var(--c-text-muted); display: block; }
+.ps-value { font-size: 16px; font-weight: 700; font-variant-numeric: tabular-nums; }
+.ps-value.green { color: var(--c-success); }
+.ps-value.red { color: var(--c-danger); }
+.ps-value.purple { color: var(--c-primary); }
+
+/* ═══════════════════════════════════════════════════
+   Result
+   ═══════════════════════════════════════════════════ */
+.result-stats { display: grid; grid-template-columns: repeat(3, 1fr); gap: 8px; margin-top: 12px; }
+.result-stat-card { background: var(--c-bg); padding: 12px; border-radius: var(--radius-sm); text-align: center; }
+.result-stat-card.primary .rsc-num { color: var(--c-primary); }
+.result-stat-card.success .rsc-num { color: var(--c-success); }
+.result-stat-card.danger .rsc-num { color: var(--c-danger); }
+.rsc-num { font-size: 22px; font-weight: 700; }
+.rsc-label { font-size: 11px; color: var(--c-text-muted); margin-top: 2px; }
+.result-dir { font-size: 12px; color: var(--c-text-secondary); padding: 8px 0; font-family: var(--font-mono); }
+.result-list { margin-top: 8px; max-height: 400px; overflow-y: auto; }
+.result-item {
+  display: flex; align-items: center; gap: 8px; font-size: 12px;
+  padding: 7px 10px; border-radius: var(--radius-sm);
+  transition: background 0.15s;
+}
+.result-item:hover { background: var(--c-bg); }
+.ri-icon { flex-shrink: 0; font-size: 13px; }
+.ri-url { flex: 1; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; color: var(--c-text); }
+.ri-count { flex-shrink: 0; font-weight: 600; color: var(--c-primary); background: var(--c-primary-subtle); padding: 1px 8px; border-radius: 8px; font-size: 11px; }
+.ri-name { flex-shrink: 0; color: var(--c-text-secondary); max-width: 200px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; font-family: var(--font-mono); font-size: 11px; }
+.ri-extra { flex-shrink: 0; font-size: 11px; }
+.ri-action { flex-shrink: 0; }
+.ri-action button { font-size: 10px; padding: 2px 8px; background: var(--c-success); color: #fff; border: none; border-radius: 6px; cursor: pointer; }
+.ri-action button:hover { background: #059669; }
+
+/* ═══════════════════════════════════════════════════
+   URL preview
+   ═══════════════════════════════════════════════════ */
+.url-preview { margin-top: 12px; display: none; }
+.url-preview.active { display: block; }
+.url-preview-header { font-size: 12px; color: var(--c-text-secondary); padding: 6px 0; }
+.url-preview-item { display: flex; align-items: center; gap: 8px; padding: 5px 8px; border-radius: 6px; font-size: 12px; }
+.url-preview-item:hover { background: var(--c-bg); }
+.upi-idx { flex-shrink: 0; width: 24px; text-align: right; color: var(--c-text-muted); font-family: var(--font-mono); font-size: 11px; }
+.upi-text { flex: 1; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; font-family: var(--font-mono); font-size: 11px; }
+.upi-copy { cursor: pointer; flex-shrink: 0; opacity: 0.4; font-size: 13px; }
+.upi-copy:hover { opacity: 1; }
+
+/* ═══════════════════════════════════════════════════
+   Variable entry
+   ═══════════════════════════════════════════════════ */
+.var-entry {
+  background: var(--c-bg); border-radius: var(--radius-sm);
+  padding: 14px 16px; margin-bottom: 8px; position: relative;
+  border: 1px solid var(--c-border);
+}
+.var-header { display: flex; align-items: center; gap: 10px; margin-bottom: 8px; }
+.var-name { font-weight: 600; font-family: var(--font-mono); font-size: 13px; color: var(--c-primary); }
+.var-remove { position: absolute; top: 8px; right: 8px; }
+.var-mode-tabs { display: flex; gap: 2px; margin-bottom: 8px; }
+.var-mode-tabs button {
+  padding: 5px 10px; font-size: 11px; border: 1px solid var(--c-border);
+  background: var(--c-surface); cursor: pointer; color: var(--c-text-secondary);
+  transition: all 0.15s;
+}
+.var-mode-tabs button:first-child { border-radius: 6px 0 0 6px; }
+.var-mode-tabs button:last-child { border-radius: 0 6px 6px 0; }
+.var-mode-tabs button.active { background: var(--c-primary); color: #fff; border-color: var(--c-primary); }
+.var-mode-tabs button:hover:not(.active) { background: var(--c-bg); }
+.var-body { display: none; }
+.var-body.active { display: block; }
+
+/* ═══════════════════════════════════════════════════
+   Config
+   ═══════════════════════════════════════════════════ */
+.config-section {
+  background: var(--c-bg); border-radius: var(--radius-sm);
+  padding: 18px 20px; margin-bottom: 12px;
+}
+.config-title { font-size: 13px; font-weight: 600; margin-bottom: 12px; color: var(--c-text-secondary); }
+.config-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
+.config-grid-3 { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 10px; }
+.config-grid-4 { display: grid; grid-template-columns: repeat(4,1fr); gap: 10px; }
+.config-item label { display: block; font-size: 11px; color: var(--c-text-muted); margin-bottom: 3px; }
+.config-item.full { grid-column: 1 / -1; }
+.config-switches { display: flex; flex-direction: column; gap: 6px; }
+.switch-row {
+  display: flex; align-items: center; gap: 12px; padding: 6px 0;
+  justify-content: space-between;
+}
+.sw-info { flex: 1; }
+.sw-label { font-size: 12px; font-weight: 500; }
+.sw-desc { font-size: 11px; color: var(--c-text-muted); }
+.switch { position: relative; display: inline-block; width: 40px; height: 22px; flex-shrink: 0; }
+.switch input { opacity: 0; width: 0; height: 0; }
+.slider { position: absolute; cursor: pointer; inset: 0; background: #cbd5e1; border-radius: 11px; transition: 0.2s; }
+.slider::before { content: ''; position: absolute; height: 16px; width: 16px; left: 3px; bottom: 3px; background: #fff; border-radius: 50%; transition: 0.2s; }
+.switch input:checked + .slider { background: var(--c-primary); }
+.switch input:checked + .slider::before { transform: translateX(18px); }
+
+.ext-grid { display: flex; flex-wrap: wrap; gap: 6px; }
+.ext-grid label {
+  font-size: 11px; padding: 4px 10px; border-radius: 6px;
+  border: 1px solid var(--c-border); cursor: pointer; transition: all 0.15s;
+  font-family: var(--font-mono);
+}
+.ext-grid label.checked { background: var(--c-primary-subtle); border-color: var(--c-primary); color: var(--c-primary); font-weight: 500; }
+
+/* ═══════════════════════════════════════════════════
+   Media result / sniff result
+   ═══════════════════════════════════════════════════ */
+.media-list { margin-top: 10px; max-height: 500px; overflow-y: auto; }
+.media-item {
+  display: flex; align-items: center; gap: 8px; padding: 8px 10px;
+  border-radius: var(--radius-sm); font-size: 12px;
+  border: 1px solid var(--c-border); margin-bottom: 6px;
+}
+.media-item:hover { background: var(--c-bg); }
+.mi-icon { flex-shrink: 0; font-size: 16px; }
+.mi-info { flex: 1; min-width: 0; }
+.mi-title { font-weight: 500; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.mi-url { font-size: 11px; color: var(--c-text-muted); overflow: hidden; text-overflow: ellipsis; white-space: nowrap; font-family: var(--font-mono); }
+.mi-meta { font-size: 10px; color: var(--c-text-muted); display: flex; gap: 6px; margin-top: 2px; }
+.mi-actions { flex-shrink: 0; display: flex; gap: 4px; }
+.mi-actions button { font-size: 10px; padding: 3px 8px; border: none; border-radius: 5px; cursor: pointer; font-family: inherit; }
+.mi-actions .btn-dl-video { background: var(--c-primary); color: #fff; }
+.mi-actions .btn-dl-audio { background: var(--c-success); color: #fff; }
+.mi-actions .btn-dl-video:hover { background: var(--c-primary-hover); }
+.mi-actions .btn-dl-audio:hover { background: #059669; }
+
+/* ═══════════════════════════════════════════════════
+   Toast
+   ═══════════════════════════════════════════════════ */
+.toast-container {
+  position: fixed; top: 16px; right: 16px; z-index: 10000;
+  display: flex; flex-direction: column; gap: 8px; max-width: 380px;
+}
+.toast {
+  display: flex; align-items: center; gap: 8px; padding: 12px 16px;
+  background: var(--c-surface); border-radius: var(--radius-sm);
+  box-shadow: var(--shadow-md); border: 1px solid var(--c-border);
+  font-size: 13px; transform: translateX(120%); opacity: 0;
+  transition: all 0.35s cubic-bezier(0.22, 1, 0.36, 1);
+}
+.toast.show { transform: translateX(0); opacity: 1; }
+.toast.success { border-left: 4px solid var(--c-success); }
+.toast.error { border-left: 4px solid var(--c-danger); }
+.toast.warning { border-left: 4px solid var(--c-warning); }
+.toast.info { border-left: 4px solid var(--c-info); }
+.toast-icon { font-size: 16px; flex-shrink: 0; }
+
+/* ═══════════════════════════════════════════════════
+   Save indicator
+   ═══════════════════════════════════════════════════ */
+.save-indicator { font-size: 11px; color: var(--c-text-muted); }
+.save-indicator.saved { color: var(--c-success); }
+
+.mt-8 { margin-top: 8px; }
+.mt-12 { margin-top: 12px; }
+.mt-16 { margin-top: 16px; }
+.mt-20 { margin-top: 20px; }
+.mb-8 { margin-bottom: 8px; }
+.mb-12 { margin-bottom: 12px; }
+.flex { display: flex; }
+.flex-wrap { flex-wrap: wrap; }
+.items-center { align-items: center; }
+.gap-8 { gap: 8px; }
+.gap-12 { gap: 12px; }
+.text-muted { color: var(--c-text-muted); font-size: 12px; }
+.text-sm { font-size: 12px; }
+.flex-1 { flex: 1; min-width: 0; }
+
+/* ═══════════════════════════════════════════════════
+   Responsive
+   ═══════════════════════════════════════════════════ */
+@media (max-width: 900px) {
+  .header-inner { padding: 22px 18px 18px; }
+  .header-title h1 { font-size: 20px; }
+  .header-actions .header-badge:not(:first-child) { display: none; }
+  .card { padding: 22px 20px; }
+  .config-grid, .config-grid-3, .config-grid-4 { grid-template-columns: 1fr; }
+  .row-2, .row-3, .row-4 { grid-template-columns: 1fr; }
+  .app-main { padding: 0 16px 32px; }
+  .result-stats { grid-template-columns: 1fr 1fr; }
+}
+
+@media (max-width: 640px) {
+  .header-inner { padding: 18px 14px 14px; }
+  .header-brand { gap: 10px; }
+  .header-logo { width: 36px; height: 36px; font-size: 18px; border-radius: 10px; }
+  .header-title h1 { font-size: 17px; }
+  .header-title span { font-size: 11px; }
+  .header-badge { display: none !important; }
+  .tabs-nav { padding: 3px; border-radius: var(--radius); }
+  .tabs-nav button { padding: 10px 8px; font-size: 12px; border-radius: 9px; }
+  .tabs-nav button .tab-icon { font-size: 14px; }
+  .tabs-nav button .tab-badge { display: none; }
+  .card { padding: 18px 16px; border-radius: var(--radius); }
+  .card-header { margin-bottom: 16px; padding-bottom: 12px; }
+  .card-header h2 { font-size: 15px; }
+  .row { flex-direction: column; }
+  .result-stats { grid-template-columns: 1fr; }
+  .var-entry { padding: 14px 14px; }
+  .config-section { padding: 16px; }
+  .toast-container { right: 10px; left: 10px; max-width: none; }
+  .toast { font-size: 12px; padding: 12px 14px; }
+  .header-top { flex-direction: column; align-items: flex-start; }
+  .header-actions { width: 100%; }
+  .header-actions .header-badge { display: inline-flex !important; flex: 1; justify-content: center; }
+}
+
+/* Loading spinner for buttons */
+.btn-spinner {
+  display: inline-block;
+  width: 14px;
+  height: 14px;
+  border: 2px solid rgba(255,255,255,0.3);
+  border-top-color: #fff;
+  border-radius: 50%;
+  animation: spin 0.6s linear infinite;
+}
+@keyframes spin { to { transform: rotate(360deg); } }
+</style>
+</head>
+<body>
+
+<!-- ════════════════════════════════════════════
+     Header
+     ════════════════════════════════════════════ -->
+<header class="app-header">
+  <div class="header-inner">
+    <div class="header-top">
+      <div class="header-brand">
+        <div class="header-logo">🖼️</div>
+        <div class="header-title">
+          <h1>PicPilot</h1>
+          <span>智能网页资源批量下载工具</span>
+        </div>
+      </div>
+      <div class="header-actions">
+        <span class="header-badge">⚡ 并发下载</span>
+        <span class="header-badge">🎬 视频下载</span>
+        <span class="header-badge">🎵 音频下载</span>
+        <span class="header-badge">🔍 资源嗅探</span>
+      </div>
+    </div>
+  </div>
+</header>
+
+<!-- ════════════════════════════════════════════
+     Main
+     ════════════════════════════════════════════ -->
+<main class="app-main">
+
+  <!-- ─── Tab Navigation ─── -->
+  <div class="tabs-wrapper">
+    <nav class="tabs-nav">
+      <button class="active" data-tab="download">
+        <span class="tab-icon">⬇</span> 图片下载
+      </button>
+      <button data-tab="video">
+        <span class="tab-icon">🎬</span> 视频下载
+        <span class="tab-badge">NEW</span>
+      </button>
+      <button data-tab="sniff">
+        <span class="tab-icon">🔍</span> 资源嗅探
+        <span class="tab-badge">NEW</span>
+      </button>
+      <button data-tab="audio">
+        <span class="tab-icon">🎵</span> 音频下载
+        <span class="tab-badge">NEW</span>
+      </button>
+      <button data-tab="url-gen">
+        <span class="tab-icon">🔗</span> URL 生成
+      </button>
+      <button data-tab="direct">
+        <span class="tab-icon">📥</span> 直接下载
+      </button>
+      <button data-tab="config">
+        <span class="tab-icon">⚙</span> 设置
+      </button>
+    </nav>
+  </div>
+
+  <!-- ════════════════════════════════════════════
+       Tab: 图片下载
+       ════════════════════════════════════════════ -->
+  <section class="card tab-content" id="tab-download">
+    <div class="card-header">
+      <div class="card-icon purple">⬇</div>
+      <div>
+        <h2>从网页下载图片</h2>
+        <span class="card-desc">输入网页地址，自动提取并批量下载所有图片</span>
+      </div>
+      <span class="card-tag">核心功能</span>
+    </div>
+
+    <div class="form-group">
+      <label class="form-label">
+        网页 URL
+        <span class="label-hint">（每行一个，支持批量）</span>
+      </label>
+      <textarea class="textarea" id="download-urls"
+        placeholder="https://example.com/gallery&#10;https://example.com/page2"
+        rows="3"></textarea>
+    </div>
+
+    <div class="row">
+      <div class="form-group">
+        <label class="form-label">
+          保存目录
+          <span class="label-hint">（留空自动生成）</span>
+        </label>
+        <input class="input" id="download-dir" placeholder="例如: D:\图片">
+      </div>
+      <div class="form-group" style="display:flex;flex-direction:column;justify-content:flex-end;">
+        <button class="btn btn-primary btn-block" id="btn-download" onclick="startDownload()">
+          🚀 开始下载
+        </button>
+      </div>
+    </div>
+
+    <!-- 进度 -->
+    <div class="progress-area" id="download-progress">
+      <div class="progress-bar-wrap">
+        <div class="progress-bar-fill" id="dl-progress-fill"></div>
+      </div>
+      <div class="progress-info">
+        <span class="progress-status" id="dl-status-text">准备就绪...</span>
+        <span class="progress-pct" id="dl-status-pct">0%</span>
+        <span class="progress-badge running" id="dl-status-badge">等待中</span>
+      </div>
+      <div class="progress-stats" id="dl-progress-stats">
+        <div class="progress-stat">
+          <span class="ps-label">页面进度</span>
+          <span class="ps-value purple" id="dl-page-progress">0/0</span>
+        </div>
+        <div class="progress-stat">
+          <span class="ps-label">成功</span>
+          <span class="ps-value green" id="dl-success-count">0</span>
+        </div>
+        <div class="progress-stat">
+          <span class="ps-label">失败</span>
+          <span class="ps-value red" id="dl-fail-count">0</span>
+        </div>
+      </div>
+    </div>
+
+    <div id="download-result" class="mt-12"></div>
+  </section>
+
+  <!-- ════════════════════════════════════════════
+       Tab: 视频下载
+       ════════════════════════════════════════════ -->
+  <section class="card tab-content" id="tab-video" style="display:none">
+    <div class="card-header">
+      <div class="card-icon pink">🎬</div>
+      <div>
+        <h2>视频下载</h2>
+        <span class="card-desc">解析视频信息并下载，支持单个和批量模式</span>
+      </div>
+      <span class="card-tag">增强功能</span>
+    </div>
+
+    <!-- 单视频下载 -->
+    <div class="config-section">
+      <div class="config-title">📥 单个视频下载</div>
+      <div class="form-group">
+        <label class="form-label">视频页面 URL <span class="label-hint">（支持 B 站、YouTube、抖音等主流视频站）</span></label>
+        <input class="input" id="video-url" placeholder="https://www.bilibili.com/video/BV1xx411c7mD">
+      </div>
+      <div class="row">
+        <div class="form-group">
+          <label class="form-label">保存目录 <span class="label-hint">（留空为 downloaded_videos/）</span></label>
+          <input class="input" id="video-save-dir" placeholder="例如: D:\视频">
+        </div>
+        <div class="form-group" style="display:flex;flex-direction:column;justify-content:flex-end;">
+          <button class="btn btn-success btn-block" onclick="startVideoDownload()">🎬 下载视频</button>
+        </div>
+      </div>
+
+      <!-- 视频进度 -->
+      <div class="progress-area" id="video-progress">
+        <div class="progress-bar-wrap">
+          <div class="progress-bar-fill" id="vid-progress-fill"></div>
+        </div>
+        <div class="progress-info">
+          <span class="progress-status" id="vid-status-text">准备就绪...</span>
+          <span class="progress-pct" id="vid-status-pct">0%</span>
+          <span class="progress-badge running" id="vid-status-badge">等待中</span>
+        </div>
+      </div>
+      <div id="video-dl-result" class="mt-12"></div>
+    </div>
+
+    <!-- 批量视频下载 -->
+    <div class="config-section">
+      <div class="config-title">📦 批量视频下载</div>
+      <div class="form-group">
+        <label class="form-label">视频 URL 列表 <span class="label-hint">（每行一个）</span></label>
+        <textarea class="textarea" id="video-batch-urls" rows="4"
+          placeholder="https://www.bilibili.com/video/BV1xx411c7mD&#10;https://www.bilibili.com/video/BV1GJ411x7zq"></textarea>
+      </div>
+      <div class="row">
+        <div class="form-group">
+          <label class="form-label">保存目录 <span class="label-hint">（留空自动生成）</span></label>
+          <input class="input" id="video-batch-save-dir" placeholder="例如: D:\视频批量">
+        </div>
+        <div class="form-group" style="display:flex;flex-direction:column;justify-content:flex-end;">
+          <button class="btn btn-primary btn-block" onclick="startVideoBatchDownload()">📦 批量下载</button>
+        </div>
+      </div>
+
+      <!-- 批量进度 -->
+      <div class="progress-area" id="video-batch-progress">
+        <div class="progress-bar-wrap">
+          <div class="progress-bar-fill" id="vb-progress-fill"></div>
+        </div>
+        <div class="progress-info">
+          <span class="progress-status" id="vb-status-text">准备就绪...</span>
+          <span class="progress-pct" id="vb-status-pct">0%</span>
+          <span class="progress-badge running" id="vb-status-badge">等待中</span>
+        </div>
+      </div>
+      <div id="video-batch-result" class="mt-12"></div>
+    </div>
+
+    <div class="info-box mt-8">
+      <span class="info-icon">💡</span>
+      <span>视频下载依赖 <b>yt-dlp</b>（已内置），支持 B 站、YouTube、抖音、微博、Twitter(X) 等数百个视频站。</span>
+    </div>
+  </section>
+
+  <!-- ════════════════════════════════════════════
+       Tab: 资源嗅探
+       ════════════════════════════════════════════ -->
+  <section class="card tab-content" id="tab-sniff" style="display:none">
+    <div class="card-header">
+      <div class="card-icon cyan">🔍</div>
+      <div>
+        <h2>资源嗅探</h2>
+        <span class="card-desc">扫描网页源码，发现页面中嵌入的视频和音频资源链接</span>
+      </div>
+      <span class="card-tag">增强功能</span>
+    </div>
+
+    <div class="info-box">
+      <span class="info-icon">💡</span>
+      <span>输入任意网页地址，系统将自动扫描 HTML 源码，提取所有 <code><video></code>、<code><audio></code> 标签以及常见视频/音频文件链接（.mp4、.m3u8、.mp3 等）。</span>
+    </div>
+
+    <div class="row-2">
+      <div class="form-group">
+        <label class="form-label">网页 URL</label>
+        <input class="input" id="sniff-url" placeholder="https://example.com/video-page">
+      </div>
+      <div class="form-group" style="display:flex;flex-direction:column;justify-content:flex-end;">
+        <button class="btn btn-primary btn-block" onclick="startSniff()">🔍 开始嗅探</button>
+      </div>
+    </div>
+
+    <!-- 嗅探结果 -->
+    <div id="sniff-result" style="display:none">
+      <div class="section-divider mt-16">🎬 发现视频</div>
+      <div id="sniff-videos" class="media-list">
+        <div class="text-muted" style="padding:10px;text-align:center">未发现视频资源</div>
+      </div>
+
+      <div class="section-divider mt-16">🎵 发现音频</div>
+      <div id="sniff-audios" class="media-list">
+        <div class="text-muted" style="padding:10px;text-align:center">未发现音频资源</div>
+      </div>
+
+      <div class="btn-group mt-16" id="sniff-batch-actions" style="display:none">
+        <button class="btn btn-primary btn-sm" onclick="downloadAllSniffedVideos()">📥 下载全部视频</button>
+        <button class="btn btn-success btn-sm" onclick="downloadAllSniffedAudios()">📥 下载全部音频</button>
+      </div>
+    </div>
+
+    <div id="sniff-loading" class="mt-12" style="display:none;text-align:center;padding:20px;color:var(--c-text-muted)">
+      <span class="btn-spinner" style="border-color:var(--c-border);border-top-color:var(--c-primary)"></span>
+      <span style="margin-left:8px;font-size:13px">正在扫描页面资源...</span>
+    </div>
+
+    <!-- 嗅探结果的批量下载进度 -->
+    <div class="progress-area" id="sniff-progress-area">
+      <div class="progress-bar-wrap">
+        <div class="progress-bar-fill" id="sf-progress-fill"></div>
+      </div>
+      <div class="progress-info">
+        <span class="progress-status" id="sf-status-text">准备就绪...</span>
+        <span class="progress-pct" id="sf-status-pct">0%</span>
+        <span class="progress-badge running" id="sf-status-badge">等待中</span>
+      </div>
+      <div class="progress-stats">
+        <div class="progress-stat">
+          <span class="ps-label">成功</span>
+          <span class="ps-value green" id="sf-success-count">0</span>
+        </div>
+        <div class="progress-stat">
+          <span class="ps-label">失败</span>
+          <span class="ps-value red" id="sf-fail-count">0</span>
+        </div>
+      </div>
+    </div>
+    <div id="sniff-download-result" class="mt-12"></div>
+  </section>
+
+  <!-- ════════════════════════════════════════════
+       Tab: 音频下载
+       ════════════════════════════════════════════ -->
+  <section class="card tab-content" id="tab-audio" style="display:none">
+    <div class="card-header">
+      <div class="card-icon green">🎵</div>
+      <div>
+        <h2>音频下载</h2>
+        <span class="card-desc">解析并下载音频文件，支持单个和批量模式</span>
+      </div>
+      <span class="card-tag">增强功能</span>
+    </div>
+
+    <!-- 单音频 -->
+    <div class="config-section">
+      <div class="config-title">📥 单个音频下载</div>
+      <div class="form-group">
+        <label class="form-label">音频 URL <span class="label-hint">（支持 mp3、wav、flac、m4a 等常见格式）</span></label>
+        <input class="input" id="audio-url" placeholder="https://example.com/audio.mp3">
+      </div>
+      <div class="row">
+        <div class="form-group">
+          <label class="form-label">保存目录 <span class="label-hint">（留空为 downloaded_audios/）</span></label>
+          <input class="input" id="audio-save-dir" placeholder="例如: D:\音乐">
+        </div>
+        <div class="form-group" style="display:flex;flex-direction:column;justify-content:flex-end;">
+          <button class="btn btn-success btn-block" onclick="startAudioDownload()">🎵 下载音频</button>
+        </div>
+      </div>
+
+      <div class="progress-area" id="audio-progress">
+        <div class="progress-bar-wrap">
+          <div class="progress-bar-fill" id="aud-progress-fill"></div>
+        </div>
+        <div class="progress-info">
+          <span class="progress-status" id="aud-status-text">准备就绪...</span>
+          <span class="progress-pct" id="aud-status-pct">0%</span>
+          <span class="progress-badge running" id="aud-status-badge">等待中</span>
+        </div>
+      </div>
+      <div id="audio-dl-result" class="mt-12"></div>
+    </div>
+
+    <!-- 批量音频 -->
+    <div class="config-section">
+      <div class="config-title">📦 批量音频下载</div>
+      <div class="form-group">
+        <label class="form-label">音频 URL 列表 <span class="label-hint">（每行一个）</span></label>
+        <textarea class="textarea" id="audio-batch-urls" rows="4"
+          placeholder="https://example.com/audio1.mp3&#10;https://example.com/audio2.wav"></textarea>
+      </div>
+      <div class="row">
+        <div class="form-group">
+          <label class="form-label">保存目录 <span class="label-hint">（留空自动生成）</span></label>
+          <input class="input" id="audio-batch-save-dir" placeholder="例如: D:\音乐批量">
+        </div>
+        <div class="form-group" style="display:flex;flex-direction:column;justify-content:flex-end;">
+          <button class="btn btn-primary btn-block" onclick="startAudioBatchDownload()">📦 批量下载</button>
+        </div>
+      </div>
+
+      <div class="progress-area" id="audio-batch-progress">
+        <div class="progress-bar-wrap">
+          <div class="progress-bar-fill" id="ab-progress-fill"></div>
+        </div>
+        <div class="progress-info">
+          <span class="progress-status" id="ab-status-text">准备就绪...</span>
+          <span class="progress-pct" id="ab-status-pct">0%</span>
+          <span class="progress-badge running" id="ab-status-badge">等待中</span>
+        </div>
+      </div>
+      <div id="audio-batch-result" class="mt-12"></div>
+    </div>
+  </section>
+
+  <!-- ════════════════════════════════════════════
+       Tab: URL 生成
+       ════════════════════════════════════════════ -->
+  <section class="card tab-content" id="tab-url-gen" style="display:none">
+    <div class="card-header">
+      <div class="card-icon blue">🔗</div>
+      <div>
+        <h2>URL 批量生成</h2>
+        <span class="card-desc">智能生成图片页面链接，支持范围 / 列表 / 字符序列</span>
+      </div>
+      <span class="card-tag">增强功能</span>
+    </div>
+
+    <div class="info-box">
+      <span class="info-icon">💡</span>
+      <span>选择模式后定义参数，系统会自动计算所有参数的<b>笛卡尔积</b>，生成完整的 URL 列表。</span>
+    </div>
+
+    <div class="row-2">
+      <div class="form-group">
+        <label class="form-label">生成模式</label>
+        <select class="select" id="url-mode" onchange="toggleUrlMode()">
+          <option value="pagination">🔗 分页参数模式（?page=1&page=2...）</option>
+          <option value="template">📝 模板替换模式（/page/{n}/）</option>
+        </select>
+      </div>
+    </div>
+
+    <!-- 分页参数模式 -->
+    <div id="pagination-mode">
+      <div class="form-group">
+        <label class="form-label">基础 URL <span class="label-hint">（含固定参数）</span></label>
+        <input class="input" id="base-url" placeholder="https://example.com/list?type=photo">
+      </div>
+
+      <div class="section-divider">📌 参数变量</div>
+      <div id="pagination-vars-container"></div>
+      <div class="btn-group mt-8">
+        <button class="btn btn-outline btn-sm" onclick="addPaginationVar()">＋ 添加参数</button>
+      </div>
+    </div>
+
+    <!-- 模板替换模式 -->
+    <div id="template-mode" style="display:none">
+      <div class="form-group">
+        <label class="form-label">
+          URL 模板
+          <span class="label-hint">使用 <code style="background:#edf2f7;padding:1px 6px;border-radius:3px">{变量名}</code> 占位</span>
+        </label>
+        <input class="input" id="url-template" placeholder="https://example.com/gallery/{page}?id={id}">
+      </div>
+
+      <div class="section-divider">📌 变量定义</div>
+      <div id="template-vars-container"></div>
+      <div class="btn-group mt-8">
+        <button class="btn btn-outline btn-sm" onclick="addTemplateVar()">＋ 添加变量</button>
+      </div>
+    </div>
+
+    <div class="btn-group mt-16">
+      <button class="btn btn-primary" onclick="generateUrls()">🔄 生成 URL</button>
+      <button class="btn btn-outline" onclick="copyGeneratedUrls()" id="btn-copy-urls" style="display:none">📋 复制</button>
+      <span class="save-indicator" id="url-gen-hint"></span>
+    </div>
+
+    <div class="url-preview" id="generated-urls"></div>
+    <div id="url-gen-result"></div>
+  </section>
+
+  <!-- ════════════════════════════════════════════
+       Tab: 直接下载
+       ════════════════════════════════════════════ -->
+  <section class="card tab-content" id="tab-direct" style="display:none">
+    <div class="card-header">
+      <div class="card-icon green">📥</div>
+      <div>
+        <h2>直接下载图片链接</h2>
+        <span class="card-desc">已知图片直接地址时，跳过网页解析直接批量下载</span>
+      </div>
+      <span class="card-tag">快捷方式</span>
+    </div>
+
+    <div class="info-box">
+      <span class="info-icon">💡</span>
+      <span>如果你已经有图片的直接链接（如检查网页元素获得），可以直接粘贴到这里下载，无需经过网页解析步骤。</span>
+    </div>
+
+    <div class="form-group">
+      <label class="form-label">图片 URL <span class="label-hint">（每行一个）</span></label>
+      <textarea class="textarea" id="direct-urls" rows="5"
+        placeholder="https://example.com/images/photo1.jpg&#10;https://example.com/images/photo2.png"></textarea>
+    </div>
+
+    <div class="row">
+      <div class="form-group">
+        <label class="form-label">保存目录 <span class="label-hint">（留空自动生成）</span></label>
+        <input class="input" id="direct-dir" placeholder="例如: D:\downloads">
+      </div>
+      <div class="form-group" style="display:flex;flex-direction:column;justify-content:flex-end;">
+        <button class="btn btn-success btn-block" onclick="startDirectDownload()">🚀 开始下载</button>
+      </div>
+    </div>
+
+    <!-- 进度 -->
+    <div class="progress-area" id="direct-progress">
+      <div class="progress-bar-wrap">
+        <div class="progress-bar-fill" id="dir-progress-fill"></div>
+      </div>
+      <div class="progress-info">
+        <span class="progress-status" id="dir-status-text">准备就绪...</span>
+        <span class="progress-pct" id="dir-status-pct">0%</span>
+        <span class="progress-badge running" id="dir-status-badge">等待中</span>
+      </div>
+      <div class="progress-stats" id="dir-progress-stats">
+        <div class="progress-stat">
+          <span class="ps-label">进度</span>
+          <span class="ps-value purple" id="dir-progress-count">0/0</span>
+        </div>
+        <div class="progress-stat">
+          <span class="ps-label">成功</span>
+          <span class="ps-value green" id="dir-success-count">0</span>
+        </div>
+        <div class="progress-stat">
+          <span class="ps-label">失败</span>
+          <span class="ps-value red" id="dir-fail-count">0</span>
+        </div>
+      </div>
+    </div>
+
+    <div id="direct-result" class="mt-12"></div>
+  </section>
+
+  <!-- ════════════════════════════════════════════
+       Tab: 设置
+       ════════════════════════════════════════════ -->
+  <section class="card tab-content" id="tab-config" style="display:none">
+    <div class="card-header">
+      <div class="card-icon orange">⚙</div>
+      <div>
+        <h2>应用设置</h2>
+        <span class="card-desc">修改任意配置后自动保存，无需手动操作</span>
+      </div>
+      <span class="card-tag">配置</span>
+    </div>
+
+    <!-- HTTP -->
+    <div class="config-section">
+      <div class="config-title">🌐 网络请求</div>
+      <div class="config-grid">
+        <div class="config-item">
+          <label>并发下载数</label>
+          <input class="input" id="cfg-max_workers" type="number" min="1" max="64" onchange="autoSaveConfig()">
+        </div>
+        <div class="config-item">
+          <label>请求超时（秒）</label>
+          <input class="input" id="cfg-timeout" type="number" min="1" max="120" onchange="autoSaveConfig()">
+        </div>
+        <div class="config-item">
+          <label>重试次数</label>
+          <input class="input" id="cfg-retry_times" type="number" min="0" max="20" onchange="autoSaveConfig()">
+        </div>
+        <div class="config-item">
+          <label>请求间隔（秒）</label>
+          <input class="input" id="cfg-request_delay" type="number" min="0" max="30" step="0.5" onchange="autoSaveConfig()">
+        </div>
+        <div class="config-item full">
+          <label>User-Agent</label>
+          <input class="input" id="cfg-user_agent" onchange="autoSaveConfig()">
+        </div>
+        <div class="config-item full">
+          <label>HTTP 代理 <span class="text-muted">（留空不使用）</span></label>
+          <input class="input" id="cfg-proxy" placeholder="http://127.0.0.1:7890" onchange="autoSaveConfig()">
+        </div>
+      </div>
+      <div class="config-switches mt-8">
+        <div class="switch-row">
+          <div class="sw-info">
+            <div class="sw-label">SSL 证书验证</div>
+            <div class="sw-desc">关闭后可跳过 HTTPS 证书错误</div>
+          </div>
+          <label class="switch"><input type="checkbox" id="cfg-ssl_verify" onchange="autoSaveConfig()"><span class="slider"></span></label>
+        </div>
+        <div class="switch-row">
+          <div class="sw-info">
+            <div class="sw-label">跟随重定向</div>
+            <div class="sw-desc">自动跟随 HTTP 重定向</div>
+          </div>
+          <label class="switch"><input type="checkbox" id="cfg-follow_redirects" onchange="autoSaveConfig()"><span class="slider"></span></label>
+        </div>
+      </div>
+    </div>
+
+    <!-- 图片过滤 -->
+    <div class="config-section">
+      <div class="config-title">🖼️ 图片过滤</div>
+      <div class="config-grid">
+        <div class="config-item">
+          <label>最小大小（字节）</label>
+          <input class="input" id="cfg-min_image_size" type="number" min="0" onchange="autoSaveConfig()">
+        </div>
+        <div class="config-item">
+          <label>最大大小 <span class="text-muted">（0=不限制）</span></label>
+          <input class="input" id="cfg-max_image_size" type="number" min="0" onchange="autoSaveConfig()">
+        </div>
+        <div class="config-item">
+          <label>最小宽度（px）</label>
+          <input class="input" id="cfg-min_image_width" type="number" min="0" onchange="autoSaveConfig()">
+        </div>
+        <div class="config-item">
+          <label>最小高度（px）</label>
+          <input class="input" id="cfg-min_image_height" type="number" min="0" onchange="autoSaveConfig()">
+        </div>
+        <div class="config-item full">
+          <label>每页最大下载数 <span class="text-muted">（0=不限制）</span></label>
+          <input class="input" id="cfg-max_images_per_page" type="number" min="0" onchange="autoSaveConfig()">
+        </div>
+      </div>
+      <div class="mt-12">
+        <label style="font-size:12px;color:var(--c-text-secondary);display:block;margin-bottom:6px;">支持的图片格式</label>
+        <div class="ext-grid" id="cfg-image_extensions"></div>
+      </div>
+      <div class="config-switches mt-12">
+        <div class="switch-row">
+          <div class="sw-info">
+            <div class="sw-label">跳过 data: URL</div>
+            <div class="sw-desc">跳过内嵌的 base64 图片</div>
+          </div>
+          <label class="switch"><input type="checkbox" id="cfg-skip_data_urls" onchange="autoSaveConfig()"><span class="slider"></span></label>
+        </div>
+        <div class="switch-row">
+          <div class="sw-info">
+            <div class="sw-label">仅同域名</div>
+            <div class="sw-desc">只下载和页面同域名的图片</div>
+          </div>
+          <label class="switch"><input type="checkbox" id="cfg-only_same_domain" onchange="autoSaveConfig()"><span class="slider"></span></label>
+        </div>
+      </div>
+    </div>
+
+    <!-- 保存 -->
+    <div class="config-section">
+      <div class="config-title">💾 保存选项</div>
+      <div class="config-grid">
+        <div class="config-item full">
+          <label>自定义根目录 <span class="text-muted">（留空使用 downloaded_images/）</span></label>
+          <input class="input" id="cfg-custom_save_root" placeholder="D:\我的图片" onchange="autoSaveConfig()">
+        </div>
+        <div class="config-item">
+          <label>文件名前缀</label>
+          <input class="input" id="cfg-filename_prefix" placeholder="例如: photo_" onchange="autoSaveConfig()">
+        </div>
+        <div class="config-item">
+          <label>文件名规则</label>
+          <select class="select" id="cfg-filename_pattern" onchange="autoSaveConfig()">
+            <option value="original">原文件名</option>
+            <option value="sequential">序号（001,002...）</option>
+            <option value="hash">哈希值</option>
+          </select>
+        </div>
+      </div>
+      <div class="config-switches mt-8">
+        <div class="switch-row">
+          <div class="sw-info">
+            <div class="sw-label">按页面建子文件夹</div>
+            <div class="sw-desc">每个页面创建独立文件夹</div>
+          </div>
+          <label class="switch"><input type="checkbox" id="cfg-create_subfolder_per_page" onchange="autoSaveConfig()"><span class="slider"></span></label>
+        </div>
+        <div class="switch-row">
+          <div class="sw-info">
+            <div class="sw-label">覆盖已存在文件</div>
+            <div class="sw-desc">关闭时将自动重命名</div>
+          </div>
+          <label class="switch"><input type="checkbox" id="cfg-overwrite_existing" onchange="autoSaveConfig()"><span class="slider"></span></label>
+        </div>
+        <div class="switch-row">
+          <div class="sw-info">
+            <div class="sw-label">同时保存页面 HTML</div>
+            <div class="sw-desc">除图片外一并保存 HTML 源码</div>
+          </div>
+          <label class="switch"><input type="checkbox" id="cfg-save_html" onchange="autoSaveConfig()"><span class="slider"></span></label>
+        </div>
+      </div>
+    </div>
+
+    <!-- 其他 -->
+    <div class="config-section">
+      <div class="config-title">⚙️ 其他</div>
+      <div class="config-grid-3">
+        <div class="config-item">
+          <label>URL 生成上限</label>
+          <input class="input" id="cfg-max_generated_urls" type="number" min="100" max="50000" onchange="autoSaveConfig()">
+        </div>
+        <div class="config-item">
+          <label>服务端口</label>
+          <input class="input" id="cfg-port" type="number" min="1024" max="65535" onchange="autoSaveConfig()">
+        </div>
+      </div>
+    </div>
+
+    <div class="btn-group mt-12">
+      <button class="btn btn-outline btn-sm" onclick="resetConfig()">↺ 恢复默认</button>
+      <span class="save-indicator" id="config-save-status">配置自动保存</span>
+    </div>
+  </section>
+
+</main>
+
+<!-- Toast 容器 -->
+<div class="toast-container" id="toast-container"></div>
+
+<script>
+// ════════════════════════════════════════════════════════
+// 核心状态
+// ════════════════════════════════════════════════════════
+let _generatedUrls = [];
+let _paginationVarCount = 0;
+let _templateVarCount = 0;
+let _configCache = {};
+
+// 嗅探结果缓存
+let _sniffVideos = [];
+let _sniffAudios = [];
+
+const ALL_EXTENSIONS = [".jpg", ".jpeg", ".png", ".gif", ".webp", ".bmp", ".svg", ".ico", ".avif"];
+
+// ════════════════════════════════════════════════════════
+// Tab 切换
+// ════════════════════════════════════════════════════════
+document.querySelectorAll('.tabs-nav button').forEach(btn => {
+  btn.addEventListener('click', () => {
+    document.querySelectorAll('.tabs-nav button').forEach(b => b.classList.remove('active'));
+    btn.classList.add('active');
+    document.querySelectorAll('.tab-content').forEach(t => t.style.display = 'none');
+    const tabId = document.getElementById('tab-' + btn.dataset.tab);
+    if (tabId) tabId.style.display = 'block';
+  });
+});
+
+function toggleUrlMode() {
+  const mode = document.getElementById('url-mode').value;
+  document.getElementById('pagination-mode').style.display = mode === 'pagination' ? 'block' : 'none';
+  document.getElementById('template-mode').style.display = mode === 'template' ? 'block' : 'none';
+}
+
+// ════════════════════════════════════════════════════════
+// Toast
+// ════════════════════════════════════════════════════════
+function showToast(msg, type = 'info', duration = 3500) {
+  const container = document.getElementById('toast-container');
+  const icons = { success: '✅', error: '❌', info: 'ℹ️', warning: '⚠️' };
+  const toast = document.createElement('div');
+  toast.className = 'toast ' + type;
+  toast.innerHTML = `<span class="toast-icon">${icons[type] || 'ℹ️'}</span><span>${msg}</span>`;
+  container.appendChild(toast);
+  requestAnimationFrame(() => toast.classList.add('show'));
+  setTimeout(() => {
+    toast.classList.remove('show');
+    setTimeout(() => toast.remove(), 450);
+  }, duration);
+}
+
+// ════════════════════════════════════════════════════════
+// API
+// ════════════════════════════════════════════════════════
+async function api(url, data) {
+  const resp = await fetch(url, {
+    method: 'POST', headers: {'Content-Type': 'application/json'},
+    body: JSON.stringify(data)
+  });
+  return resp.json();
+}
+
+// ════════════════════════════════════════════════════════
+// 进度轮询（通用）
+// ════════════════════════════════════════════════════════
+function pollProgress(taskId, prefix, resultContainerId) {
+  const pctEl = document.getElementById(prefix + '-progress-fill');
+  const statusText = document.getElementById(prefix + '-status-text');
+  const statusPct = document.getElementById(prefix + '-status-pct');
+  const statusBadge = document.getElementById(prefix + '-status-badge');
+  const progressArea = document.getElementById(prefix + '-progress');
+  const pageProg = document.getElementById(prefix + '-page-progress');
+  const successCnt = document.getElementById(prefix + '-success-count');
+  const failCnt = document.getElementById(prefix + '-fail-count');
+  const progressCount = document.getElementById(prefix + '-progress-count');
+
+  if (progressArea) progressArea.classList.add('active');
+
+  const interval = setInterval(async () => {
+    try {
+      const resp = await fetch('/api/progress/' + taskId);
+      const data = await resp.json();
+      if (data.status === 'error') {
+        clearInterval(interval);
+        if (statusText) statusText.textContent = '❌ ' + (data.message || '任务出错');
+        if (statusBadge) { statusBadge.className = 'progress-badge error'; statusBadge.textContent = '失败'; }
+        showToast('❌ ' + (data.message || '下载失败'), 'error');
+        return;
+      }
+
+      const pct = data.progress || 0;
+      if (pctEl) pctEl.style.width = pct + '%';
+      if (statusPct) statusPct.textContent = pct + '%';
+      if (statusText) statusText.textContent = data.message || '处理中...';
+
+      if (pageProg && data.done_pages !== undefined) {
+        pageProg.textContent = data.done_pages + '/' + data.total_pages;
+      }
+      if (successCnt) successCnt.textContent = data.success_images || 0;
+      if (failCnt) failCnt.textContent = data.failed_images || 0;
+      if (progressCount) progressCount.textContent = (data.success_images || 0) + '/' + (data.total_images || 0);
+
+      if (data.status === 'done') {
+        clearInterval(interval);
+        if (statusBadge) { statusBadge.className = 'progress-badge done'; statusBadge.textContent = '✅ 完成'; }
+        setTimeout(async () => {
+          try {
+            const r = await fetch('/api/result/' + taskId);
+            const res = await r.json();
+            if (res.result && resultContainerId) {
+              showResult(res.result, resultContainerId);
+              showToast('✅ 下载完成！', 'success');
+            }
+          } catch(e) {}
+        }, 300);
+      } else if (data.status === 'error') {
+        clearInterval(interval);
+        if (statusBadge) { statusBadge.className = 'progress-badge error'; statusBadge.textContent = '❌ 失败'; }
+        showToast('❌ ' + (data.message || '下载失败'), 'error');
+      } else if (data.status === 'queued') {
+        if (statusBadge) { statusBadge.className = 'progress-badge queued'; statusBadge.textContent = '排队中'; }
+      } else {
+        if (statusBadge) { statusBadge.className = 'progress-badge running'; statusBadge.textContent = '运行中'; }
+      }
+    } catch(e) {}
+  }, 400);
+}
+
+// ════════════════════════════════════════════════════════
+// 视频下载
+// ════════════════════════════════════════════════════════
+async function startVideoDownload() {
+  const videoUrl = document.getElementById('video-url').value.trim();
+  if (!videoUrl) { showToast('❌ 请输入视频 URL', 'error'); return; }
+
+  const saveDir = document.getElementById('video-save-dir').value.trim();
+  try {
+    const result = await api('/api/download-video', { url: videoUrl, save_dir: saveDir });
+    if (result.status === 'ok' && result.task_id) {
+      showToast('⏳ 视频下载已启动', 'info');
+      pollProgress(result.task_id, 'vid', 'video-dl-result');
+    } else {
+      showToast('❌ ' + (result.message || '启动失败'), 'error');
+    }
+  } catch(e) {
+    showToast('❌ 请求失败: ' + e.message, 'error');
+  }
+}
+
+async function startVideoBatchDownload() {
+  const text = document.getElementById('video-batch-urls').value.trim();
+  if (!text) { showToast('❌ 请输入视频 URL 列表', 'error'); return; }
+  const urls = text.split('\n').map(s => s.trim()).filter(Boolean);
+  const saveDir = document.getElementById('video-batch-save-dir').value.trim();
+
+  try {
+    const result = await api('/api/download-videos-batch', { urls, save_dir: saveDir });
+    if (result.status === 'ok' && result.task_id) {
+      showToast(`⏳ 开始批量下载 ${urls.length} 个视频`, 'info');
+      pollProgress(result.task_id, 'vb', 'video-batch-result');
+    } else {
+      showToast('❌ ' + (result.message || '启动失败'), 'error');
+    }
+  } catch(e) {
+    showToast('❌ 请求失败: ' + e.message, 'error');
+  }
+}
+
+// ════════════════════════════════════════════════════════
+// 资源嗅探
+// ════════════════════════════════════════════════════════
+async function startSniff() {
+  const url = document.getElementById('sniff-url').value.trim();
+  if (!url) { showToast('❌ 请输入网页 URL', 'error'); return; }
+
+  document.getElementById('sniff-loading').style.display = 'block';
+  document.getElementById('sniff-result').style.display = 'none';
+  document.getElementById('sniff-batch-actions').style.display = 'none';
+  _sniffVideos = [];
+  _sniffAudios = [];
+
+  try {
+    const result = await api('/api/sniff', { url });
+    document.getElementById('sniff-loading').style.display = 'none';
+
+    if (result.status === 'ok') {
+      _sniffVideos = result.videos || [];
+      _sniffAudios = result.audios || [];
+      renderSniffResult(_sniffVideos, _sniffAudios);
+      document.getElementById('sniff-result').style.display = 'block';
+      showToast(`✅ 扫描完成: ${result.total_videos} 个视频, ${result.total_audios} 个音频`, 'success');
+    } else {
+      showToast('❌ ' + (result.message || '嗅探失败'), 'error');
+    }
+  } catch(e) {
+    document.getElementById('sniff-loading').style.display = 'none';
+    showToast('❌ 请求失败: ' + e.message, 'error');
+  }
+}
+
+function renderSniffResult(videos, audios) {
+  // 渲染视频列表
+  const videoContainer = document.getElementById('sniff-videos');
+  if (videos.length > 0) {
+    let html = '';
+    videos.forEach((v, i) => {
+      html += `
+        <div class="media-item">
+          <span class="mi-icon">🎬</span>
+          <div class="mi-info">
+            <div class="mi-title">${escapeHtml(v.title || '视频 ' + (i+1))}</div>
+            <div class="mi-url">${escapeHtml(v.url)}</div>
+            <div class="mi-meta">
+              ${v.format ? '<span>格式: ' + v.format + '</span>' : ''}
+              ${v.size ? '<span>大小: ' + v.size + '</span>' : ''}
+              ${v.resolution ? '<span>分辨率: ' + v.resolution + '</span>' : ''}
+            </div>
+          </div>
+          <div class="mi-actions">
+            <button class="btn-dl-video" onclick="downloadSingleSniffVideo(${i})">⬇ 下载</button>
+          </div>
+        </div>`;
+    });
+    videoContainer.innerHTML = html;
+  } else {
+    videoContainer.innerHTML = '<div class="text-muted" style="padding:10px;text-align:center">未发现视频资源</div>';
+  }
+
+  // 渲染音频列表
+  const audioContainer = document.getElementById('sniff-audios');
+  if (audios.length > 0) {
+    let html = '';
+    audios.forEach((a, i) => {
+      html += `
+        <div class="media-item">
+          <span class="mi-icon">🎵</span>
+          <div class="mi-info">
+            <div class="mi-title">${escapeHtml(a.title || '音频 ' + (i+1))}</div>
+            <div class="mi-url">${escapeHtml(a.url)}</div>
+            <div class="mi-meta">
+              ${a.format ? '<span>格式: ' + a.format + '</span>' : ''}
+              ${a.size ? '<span>大小: ' + a.size + '</span>' : ''}
+              ${a.duration ? '<span>时长: ' + a.duration + '</span>' : ''}
+            </div>
+          </div>
+          <div class="mi-actions">
+            <button class="btn-dl-audio" onclick="downloadSingleSniffAudio(${i})">⬇ 下载</button>
+          </div>
+        </div>`;
+    });
+    audioContainer.innerHTML = html;
+  } else {
+    audioContainer.innerHTML = '<div class="text-muted" style="padding:10px;text-align:center">未发现音频资源</div>';
+  }
+
+  // 显示批量操作按钮
+  if (videos.length > 0 || audios.length > 0) {
+    document.getElementById('sniff-batch-actions').style.display = 'flex';
+  }
+}
+
+function escapeHtml(text) {
+  const div = document.createElement('div');
+  div.textContent = text;
+  return div.innerHTML;
+}
+
+async function downloadSingleSniffVideo(index) {
+  const video = _sniffVideos[index];
+  if (!video) return;
+  try {
+    const result = await api('/api/download-video', { url: video.url, save_dir: '' });
+    if (result.status === 'ok' && result.task_id) {
+      showToast('⏳ 视频下载已启动', 'info');
+      pollProgress(result.task_id, 'vid', 'sniff-download-result');
+    } else {
+      showToast('❌ ' + (result.message || '启动失败'), 'error');
+    }
+  } catch(e) {
+    showToast('❌ 请求失败: ' + e.message, 'error');
+  }
+}
+
+async function downloadSingleSniffAudio(index) {
+  const audio = _sniffAudios[index];
+  if (!audio) return;
+  try {
+    const result = await api('/api/download-audio', { url: audio.url, save_dir: '' });
+    if (result.status === 'ok' && result.task_id) {
+      showToast('⏳ 音频下载已启动', 'info');
+      pollProgress(result.task_id, 'aud', 'sniff-download-result');
+    } else {
+      showToast('❌ ' + (result.message || '启动失败'), 'error');
+    }
+  } catch(e) {
+    showToast('❌ 请求失败: ' + e.message, 'error');
+  }
+}
+
+async function downloadAllSniffedVideos() {
+  const urls = _sniffVideos.map(v => v.url);
+  if (!urls.length) { showToast('❌ 没有可下载的视频', 'error'); return; }
+  try {
+    const result = await api('/api/download-videos-batch', { urls, save_dir: '' });
+    if (result.status === 'ok' && result.task_id) {
+      showToast(`⏳ 开始批量下载 ${urls.length} 个视频`, 'info');
+      const ea = document.getElementById('sniff-progress-area');
+      if (ea) {
+        ea.classList.add('active');
+        pollProgress(result.task_id, 'sf', 'sniff-download-result');
+      }
+    } else {
+      showToast('❌ ' + (result.message || '启动失败'), 'error');
+    }
+  } catch(e) {
+    showToast('❌ 请求失败: ' + e.message, 'error');
+  }
+}
+
+async function downloadAllSniffedAudios() {
+  const urls = _sniffAudios.map(a => a.url);
+  if (!urls.length) { showToast('❌ 没有可下载的音频', 'error'); return; }
+  try {
+    const result = await api('/api/download-audios-batch', { urls, save_dir: '' });
+    if (result.status === 'ok' && result.task_id) {
+      showToast(`⏳ 开始批量下载 ${urls.length} 个音频`, 'info');
+      const ea = document.getElementById('sniff-progress-area');
+      if (ea) {
+        ea.classList.add('active');
+        pollProgress(result.task_id, 'sf', 'sniff-download-result');
+      }
+    } else {
+      showToast('❌ ' + (result.message || '启动失败'), 'error');
+    }
+  } catch(e) {
+    showToast('❌ 请求失败: ' + e.message, 'error');
+  }
+}
+
+// ════════════════════════════════════════════════════════
+// 音频下载
+// ════════════════════════════════════════════════════════
+async function startAudioDownload() {
+  const audioUrl = document.getElementById('audio-url').value.trim();
+  if (!audioUrl) { showToast('❌ 请输入音频 URL', 'error'); return; }
+
+  const saveDir = document.getElementById('audio-save-dir').value.trim();
+  try {
+    const result = await api('/api/download-audio', { url: audioUrl, save_dir: saveDir });
+    if (result.status === 'ok' && result.task_id) {
+      showToast('⏳ 音频下载已启动', 'info');
+      pollProgress(result.task_id, 'aud', 'audio-dl-result');
+    } else {
+      showToast('❌ ' + (result.message || '启动失败'), 'error');
+    }
+  } catch(e) {
+    showToast('❌ 请求失败: ' + e.message, 'error');
+  }
+}
+
+async function startAudioBatchDownload() {
+  const text = document.getElementById('audio-batch-urls').value.trim();
+  if (!text) { showToast('❌ 请输入音频 URL 列表', 'error'); return; }
+  const urls = text.split('\n').map(s => s.trim()).filter(Boolean);
+  const saveDir = document.getElementById('audio-batch-save-dir').value.trim();
+
+  try {
+    const result = await api('/api/download-audios-batch', { urls, save_dir: saveDir });
+    if (result.status === 'ok' && result.task_id) {
+      showToast(`⏳ 开始批量下载 ${urls.length} 个音频`, 'info');
+      pollProgress(result.task_id, 'ab', 'audio-batch-result');
+    } else {
+      showToast('❌ ' + (result.message || '启动失败'), 'error');
+    }
+  } catch(e) {
+    showToast('❌ 请求失败: ' + e.message, 'error');
+  }
+}
+
+// ════════════════════════════════════════════════════════
+// 变量条目 - 保持不变
+// ════════════════════════════════════════════════════════
+function addPaginationVar(data) {
+  _paginationVarCount++;
+  const id = 'pvar_' + _paginationVarCount;
+  const container = document.getElementById('pagination-vars-container');
+  const div = document.createElement('div');
+  div.className = 'var-entry';
+  div.id = id;
+  div.innerHTML = genVarHTML(id, data || {name: 'page', mode: 'range', start: 1, end: 10, step: 1}, false);
+  container.appendChild(div);
+  return div;
+}
+
+function addTemplateVar(data) {
+  _templateVarCount++;
+  const id = 'tvar_' + _templateVarCount;
+  const container = document.getElementById('template-vars-container');
+  const div = document.createElement('div');
+  div.className = 'var-entry';
+  div.id = id;
+  div.innerHTML = genVarHTML(id, data || {name: 'page', mode: 'range', start: 1, end: 10, step: 1}, true);
+  container.appendChild(div);
+  return div;
+}
+
+function genVarHTML(id, data, showName) {
+  const nameHtml = showName
+    ? `<input class="input" id="${id}_name" placeholder="变量名" value="${data.name || ''}" style="font-weight:600;font-family:var(--font-mono);font-size:13px;width:150px;padding:6px 10px">`
+    : `<span class="var-name">${data.name || 'page'}</span>`;
+  return `
+    <div class="var-header">${nameHtml}<span style="font-size:11px;color:var(--c-text-muted)">生成方式:</span></div>
+    <button class="btn-ghost var-remove" onclick="this.closest('.var-entry').remove()">✕ 移除</button>
+    <div class="var-mode-tabs">
+      <button class="active" data-mode="range" onclick="switchVarMode(this,'${id}')">📏 范围</button>
+      <button data-mode="list" onclick="switchVarMode(this,'${id}')">📋 列表</button>
+      <button data-mode="chars" onclick="switchVarMode(this,'${id}')">🔤 字符序列</button>
+    </div>
+    <div class="var-body active" data-body="range">
+      <div class="row-3" style="margin-bottom:0">
+        <div class="form-group" style="margin-bottom:0">
+          <label style="font-size:11px;color:var(--c-text-muted)">起始</label>
+          <input class="input" id="${id}_start" type="number" value="${data.start !== undefined ? data.start : 1}" step="any" style="font-size:12px;padding:7px 10px">
+        </div>
+        <div class="form-group" style="margin-bottom:0">
+          <label style="font-size:11px;color:var(--c-text-muted)">结束</label>
+          <input class="input" id="${id}_end" type="number" value="${data.end !== undefined ? data.end : 10}" step="any" style="font-size:12px;padding:7px 10px">
+        </div>
+        <div class="form-group" style="margin-bottom:0">
+          <label style="font-size:11px;color:var(--c-text-muted)">步长</label>
+          <input class="input" id="${id}_step" type="number" value="${data.step !== undefined ? data.step : 1}" step="any" min="0.01" style="font-size:12px;padding:7px 10px">
+        </div>
+      </div>
+      <div class="flex items-center gap-8 mt-8" style="margin-bottom:0">
+        <label style="font-size:12px;display:flex;align-items:center;gap:4px;cursor:pointer">
+          <input type="checkbox" id="${id}_float" onchange="toggleFloat('${id}')" ${data.type === 'float' ? 'checked' : ''}> 浮点数
+        </label>
+        <div id="${id}_decimals_wrap" style="display:${data.type === 'float' ? 'flex' : 'none'};align-items:center;gap:6px">
+          <label style="font-size:11px;color:var(--c-text-muted)">小数位</label>
+          <input class="input" id="${id}_decimals" type="number" min="0" max="10" value="${data.decimals !== undefined ? data.decimals : 2}" style="width:60px;font-size:12px;padding:3px 6px">
+        </div>
+      </div>
+    </div>
+    <div class="var-body" data-body="list">
+      <div class="form-group" style="margin-bottom:0">
+        <label style="font-size:11px;color:var(--c-text-muted)">值列表 <span class="text-muted">（逗号或换行分隔）</span></label>
+        <textarea class="textarea" id="${id}_values" rows="2" placeholder="1,2,3,4,5&#10;a,b,c,d" style="font-size:12px;min-height:50px">${data.values_text || (data.values ? data.values.join(', ') : '')}</textarea>
+      </div>
+    </div>
+    <div class="var-body" data-body="chars">
+      <div class="row-3" style="margin-bottom:0">
+        <div class="form-group" style="margin-bottom:0">
+          <label style="font-size:11px;color:var(--c-text-muted)">字符集</label>
+          <select class="select" id="${id}_charset" onchange="updateCustomChars('${id}')" style="font-size:12px;padding:7px 10px">
+            <option value="abcdefghijklmnopqrstuvwxyz">a-z 小写</option>
+            <option value="ABCDEFGHIJKLMNOPQRSTUVWXYZ">A-Z 大写</option>
+            <option value="0123456789">0-9 数字</option>
+            <option value="abcdefghijklmnopqrstuvwxyz0123456789">a-z + 0-9</option>
+            <option value="custom">自定义</option>
+          </select>
+        </div>
+        <div class="form-group" style="margin-bottom:0">
+          <label style="font-size:11px;color:var(--c-text-muted)">起始索引</label>
+          <input class="input" id="${id}_cstart" type="number" min="0" value="0" style="font-size:12px;padding:7px 10px">
+        </div>
+        <div class="form-group" style="margin-bottom:0">
+          <label style="font-size:11px;color:var(--c-text-muted)">取字符数</label>
+          <input class="input" id="${id}_ccount" type="number" min="1" max="100" value="26" style="font-size:12px;padding:7px 10px">
+        </div>
+      </div>
+      <div class="form-group mt-8" style="margin-bottom:0;display:none" id="${id}_custom_chars">
+        <label style="font-size:11px;color:var(--c-text-muted)">自定义字符</label>
+        <input class="input" id="${id}_custom_val" value="abc123" style="font-size:12px">
+      </div>
+    </div>
+  `;
+}
+
+function switchVarMode(btn, id) {
+  const entry = btn.closest('.var-entry');
+  entry.querySelectorAll('.var-mode-tabs button').forEach(b => b.classList.remove('active'));
+  btn.classList.add('active');
+  const mode = btn.dataset.mode;
+  entry.querySelectorAll('.var-body').forEach(el => el.classList.remove('active'));
+  const target = entry.querySelector(`[data-body="${mode}"]`);
+  if (target) target.classList.add('active');
+}
+
+function toggleFloat(id) {
+  document.getElementById(id + '_decimals_wrap').style.display =
+    document.getElementById(id + '_float').checked ? 'flex' : 'none';
+}
+
+function updateCustomChars(id) {
+  const sel = document.getElementById(id + '_charset');
+  document.getElementById(id + '_custom_chars').style.display = sel.value === 'custom' ? 'block' : 'none';
+}
+
+function readVarDef(id) {
+  const entry = document.getElementById(id);
+  if (!entry) return null;
+  const nameInput = document.getElementById(id + '_name');
+  const name = nameInput ? nameInput.value.trim() : (entry.querySelector('.var-name')?.textContent?.trim() || '');
+  const activeBtn = entry.querySelector('.var-mode-tabs button.active');
+  const mode = activeBtn ? activeBtn.dataset.mode : 'range';
+  const def = { name, mode };
+  if (mode === 'range') {
+    def.start = parseFloat(document.getElementById(id + '_start')?.value) || 0;
+    def.end = parseFloat(document.getElementById(id + '_end')?.value) || 10;
+    def.step = parseFloat(document.getElementById(id + '_step')?.value) || 1;
+    if (document.getElementById(id + '_float')?.checked) {
+      def.type = 'float';
+      def.decimals = parseInt(document.getElementById(id + '_decimals')?.value) || 2;
+    }
+  } else if (mode === 'list') {
+    const text = document.getElementById(id + '_values')?.value || '';
+    def.values = text.split(/[,\n]+/).map(s => s.trim()).filter(Boolean);
+  } else if (mode === 'chars') {
+    const sel = document.getElementById(id + '_charset');
+    def.chars = sel.value === 'custom'
+      ? (document.getElementById(id + '_custom_val')?.value || 'abc')
+      : sel.value;
+    def.start_index = parseInt(document.getElementById(id + '_cstart')?.value) || 0;
+    def.count = parseInt(document.getElementById(id + '_ccount')?.value) || def.chars.length;
+  }
+  return def;
+}
+
+function readAllVars(prefix) {
+  const container = document.getElementById(prefix === 'pagination' ? 'pagination-vars-container' : 'template-vars-container');
+  const vars = {};
+  container.querySelectorAll('.var-entry').forEach(entry => {
+    const def = readVarDef(entry.id);
+    if (def && def.name) vars[def.name] = def;
+  });
+  return vars;
+}
+
+// ════════════════════════════════════════════════════════
+// URL 生成
+// ════════════════════════════════════════════════════════
+async function generateUrls() {
+  const mode = document.getElementById('url-mode').value;
+  let data;
+  if (mode === 'template') {
+    const template = document.getElementById('url-template').value.trim();
+    if (!template) { showToast('❌ 请输入 URL 模板', 'error'); return; }
+    data = { mode: 'template', template, vars: readAllVars('template') };
+  } else {
+    const baseUrl = document.getElementById('base-url').value.trim();
+    if (!baseUrl) { showToast('❌ 请输入基础 URL', 'error'); return; }
+    const params = Object.values(readAllVars('pagination'));
+    if (params.length === 0) { showToast('❌ 请添加至少一个参数', 'error'); return; }
+    data = { mode: 'pagination', base_url: baseUrl, params };
+  }
+
+  try {
+    const result = await api('/api/generate-urls', data);
+    if (result.status === 'ok') {
+      _generatedUrls = result.urls;
+      showUrlPreview(result.urls, result.total);
+      showToast(`✅ 已生成 ${result.total} 个 URL`, 'success');
+    } else {
+      showToast('❌ ' + (result.message || '生成失败'), 'error');
+    }
+  } catch(e) {
+    showToast('❌ 请求失败: ' + e.message, 'error');
+  }
+}
+
+function showUrlPreview(urls, total) {
+  const wrap = document.getElementById('generated-urls');
+  wrap.classList.add('active');
+  const preview = urls.slice(0, 50);
+  let html = `<div class="url-preview-header">
+    <strong>共 ${total} 个 URL</strong>
+    ${total > 50 ? `<span class="text-muted">（显示前 50 个）</span>` : ''}
+  </div>`;
+  preview.forEach((u, i) => {
+    html += `<div class="url-preview-item">
+      <span class="upi-idx">${i + 1}</span>
+      <span class="upi-text" title="${u}">${u}</span>
+      <span class="upi-copy" onclick="navigator.clipboard.writeText('${u.replace(/'/g, "\\'")}').then(()=>showToast('✅ 已复制','success'))">📋</span>
+    </div>`;
+  });
+  if (total > 50) {
+    html += `<div style="padding:8px;text-align:center;font-size:12px;color:var(--c-text-muted)">... 还有 ${total - 50} 个</div>`;
+  }
+  html += `<div style="padding:8px 10px 6px;display:flex;gap:8px;flex-wrap:wrap">
+    <button class="btn btn-primary btn-sm" onclick="fillDownloadFromUrls()">📥 下载全部图片</button>
+  </div>`;
+  wrap.innerHTML = html;
+  document.getElementById('btn-copy-urls').style.display = 'inline-flex';
+  document.getElementById('url-gen-hint').textContent = `已生成 ${total} 个 URL`;
+}
+
+function copyGeneratedUrls() {
+  if (!_generatedUrls.length) return;
+  navigator.clipboard.writeText(_generatedUrls.join('\n')).then(() => {
+    showToast('✅ 已复制到剪贴板', 'success');
+  });
+}
+
+function fillDownloadFromUrls() {
+  if (!_generatedUrls.length) return;
+  document.querySelector('[data-tab="download"]').click();
+  document.getElementById('download-urls').value = _generatedUrls.join('\n');
+  showToast(`✅ ${_generatedUrls.length} 个 URL 已填入下载列表`, 'info');
+}
+
+// ════════════════════════════════════════════════════════
+// 图片批量下载
+// ════════════════════════════════════════════════════════
+async function startDownload() {
+  const btn = document.getElementById('btn-download');
+  const text = document.getElementById('download-urls').value.trim();
+  if (!text) { showToast('❌ 请输入网页 URL', 'error'); return; }
+
+  btn.disabled = true;
+  btn.innerHTML = '<span class="btn-spinner"></span> 启动中...';
+
+  const urls = text.split('\n').map(s => s.trim()).filter(Boolean);
+  const saveDir = document.getElementById('download-dir').value.trim();
+
+  try {
+    const result = await api('/api/download', { urls, save_dir: saveDir });
+    if (result.status === 'ok' && result.task_id) {
+      showToast('⏳ 下载任务已启动', 'info');
+      pollProgress(result.task_id, 'dl', 'download-result');
+    } else {
+      showToast('❌ ' + (result.message || '启动失败'), 'error');
+    }
+  } catch(e) {
+    showToast('❌ 请求失败: ' + e.message, 'error');
+  }
+
+  btn.disabled = false;
+  btn.innerHTML = '🚀 开始下载';
+}
+
+// ════════════════════════════════════════════════════════
+// 直接下载
+// ════════════════════════════════════════════════════════
+async function startDirectDownload() {
+  const text = document.getElementById('direct-urls').value.trim();
+  if (!text) { showToast('❌ 请输入图片 URL', 'error'); return; }
+  const imageUrls = text.split('\n').map(s => s.trim()).filter(Boolean);
+  const saveDir = document.getElementById('direct-dir').value.trim();
+
+  try {
+    const result = await api('/api/download-urls', { image_urls: imageUrls, save_dir: saveDir });
+    if (result.status === 'ok' && result.task_id) {
+      showToast('⏳ 下载任务已启动', 'info');
+      pollProgress(result.task_id, 'dir', 'direct-result');
+    } else {
+      showToast('❌ ' + (result.message || '启动失败'), 'error');
+    }
+  } catch(e) {
+    showToast('❌ 请求失败: ' + e.message, 'error');
+  }
+}
+
+// ════════════════════════════════════════════════════════
+// 展示结果
+// ════════════════════════════════════════════════════════
+function showResult(data, containerId) {
+  const el = document.getElementById(containerId);
+  if (!data) { el.innerHTML = ''; return; }
+
+  if (data.batch) {
+    let html = `<div class="result-stats">
+      <div class="result-stat-card primary"><div class="rsc-num">${data.total}</div><div class="rsc-label">总计</div></div>
+      <div class="result-stat-card success"><div class="rsc-num">${data.success}</div><div class="rsc-label">成功</div></div>
+      <div class="result-stat-card danger"><div class="rsc-num">${data.failed}</div><div class="rsc-label">失败</div></div>
+    </div>`;
+    if (data.save_dir) html += `<div class="result-dir">📁 保存目录: ${data.save_dir}</div>`;
+    html += '<div class="result-list">';
+    (data.pages || []).forEach(p => {
+      const icon = p.error ? '❌' : (p.total > 0 ? '✅' : '📄');
+      html += `<div class="result-item">
+        <span class="ri-icon">${icon}</span>
+        <span class="ri-url" title="${p.page_url || ''}">${p.page_url || ''}</span>
+        <span class="ri-count">${p.success || 0}/${p.total || 0}</span>
+      </div>`;
+    });
+    html += '</div>';
+    el.innerHTML = html;
+  } else {
+    let html = `<div class="result-stats">
+      <div class="result-stat-card primary"><div class="rsc-num">${data.total}</div><div class="rsc-label">总计</div></div>
+      <div class="result-stat-card success"><div class="rsc-num">${data.success}</div><div class="rsc-label">成功</div></div>
+      <div class="result-stat-card danger"><div class="rsc-num">${data.failed}</div><div class="rsc-label">失败</div></div>
+    </div>`;
+    if (data.save_dir) html += `<div class="result-dir">📁 保存目录: ${data.save_dir}</div>`;
+    if (data.images && data.images.length) {
+      html += '<div class="result-list">';
+      data.images.forEach(img => {
+        const icon = img.success ? '✅' : '❌';
+        html += `<div class="result-item">
+          <span class="ri-icon">${icon}</span>
+          <span class="ri-url" title="${img.url || ''}">${img.url || ''}</span>`;
+        if (img.success) html += `<span class="ri-name">${img.filename || ''}</span>`;
+        else html += `<span class="ri-extra" style="color:var(--c-danger)">${img.error || '失败'}</span>`;
+        html += '</div>';
+      });
+      html += '</div>';
+    } else if (data.error) {
+      html += `<div class="info-box" style="border-color:var(--c-danger);color:var(--c-danger)"><span class="info-icon">⚠️</span><span>${data.error}</span></div>`;
+    }
+    el.innerHTML = html;
+  }
+}
+
+// ════════════════════════════════════════════════════════
+// 配置
+// ════════════════════════════════════════════════════════
+async function loadConfig() {
+  try {
+    const resp = await fetch('/api/config');
+    const cfg = await resp.json();
+    _configCache = cfg;
+    setVal('cfg-max_workers', cfg.max_workers);
+    setVal('cfg-timeout', cfg.timeout);
+    setVal('cfg-retry_times', cfg.retry_times);
+    setVal('cfg-request_delay', cfg.request_delay || 0);
+    setVal('cfg-user_agent', cfg.user_agent);
+    setVal('cfg-proxy', cfg.proxy || '');
+    setCheck('cfg-ssl_verify', cfg.ssl_verify !== false);
+    setCheck('cfg-follow_redirects', cfg.follow_redirects !== false);
+    setVal('cfg-min_image_size', cfg.min_image_size || 0);
+    setVal('cfg-max_image_size', cfg.max_image_size || 0);
+    setVal('cfg-min_image_width', cfg.min_image_width || 0);
+    setVal('cfg-min_image_height', cfg.min_image_height || 0);
+    setVal('cfg-max_images_per_page', cfg.max_images_per_page || 0);
+    setCheck('cfg-skip_data_urls', cfg.skip_data_urls !== false);
+    setCheck('cfg-only_same_domain', cfg.only_same_domain || false);
+    renderExts(cfg.image_extensions);
+    setVal('cfg-custom_save_root', cfg.custom_save_root || '');
+    setVal('cfg-filename_prefix', cfg.filename_prefix || '');
+    setVal('cfg-filename_pattern', cfg.filename_pattern || 'original');
+    setCheck('cfg-create_subfolder_per_page', cfg.create_subfolder_per_page !== false);
+    setCheck('cfg-overwrite_existing', cfg.overwrite_existing || false);
+    setCheck('cfg-save_html', cfg.save_html || false);
+    setVal('cfg-max_generated_urls', cfg.max_generated_urls || 5000);
+    setVal('cfg-port', cfg.port || 5000);
+  } catch(e) {
+    console.warn('加载配置失败:', e);
+  }
+}
+
+function setVal(id, val) { const el = document.getElementById(id); if (el) el.value = val ?? ''; }
+function setCheck(id, val) { const el = document.getElementById(id); if (el) el.checked = !!val; }
+
+function renderExts(selected) {
+  const container = document.getElementById('cfg-image_extensions');
+  const sel = selected || ['.jpg', '.jpeg', '.png', '.gif', '.webp', '.bmp', '.svg'];
+  container.innerHTML = ALL_EXTENSIONS.map(ext => {
+    const checked = sel.includes(ext);
+    return `<label class="${checked ? 'checked' : ''}">
+      <input type="checkbox" value="${ext}" ${checked ? 'checked' : ''} onchange="this.parentElement.classList.toggle('checked');autoSaveConfig()">
+      ${ext}
+    </label>`;
+  }).join('');
+}
+
+let _saveTimer = null;
+function autoSaveConfig() {
+  clearTimeout(_saveTimer);
+  _saveTimer = setTimeout(async () => {
+    const cfg = collectConfig();
+    try {
+      const resp = await fetch('/api/config', {
+        method: 'POST', headers: {'Content-Type': 'application/json'},
+        body: JSON.stringify(cfg)
+      });
+      const result = await resp.json();
+      if (result.status === 'ok') _configCache = result.config;
+      document.getElementById('config-save-status').textContent = '✅ 已保存';
+      setTimeout(() => {
+        document.getElementById('config-save-status').textContent = '配置自动保存';
+      }, 2000);
+    } catch(e) { console.warn('保存失败:', e); }
+  }, 400);
+}
+
+function collectConfig() {
+  const exts = [];
+  document.querySelectorAll('#cfg-image_extensions input:checked').forEach(cb => exts.push(cb.value));
+  return {
+    max_workers: parseInt(getVal('cfg-max_workers')) || 8,
+    timeout: parseInt(getVal('cfg-timeout')) || 10,
+    retry_times: parseInt(getVal('cfg-retry_times')) || 3,
+    request_delay: parseFloat(getVal('cfg-request_delay')) || 0,
+    user_agent: getVal('cfg-user_agent') || 'Mozilla/5.0',
+    proxy: getVal('cfg-proxy') || '',
+    ssl_verify: getCheck('cfg-ssl_verify'),
+    follow_redirects: getCheck('cfg-follow_redirects'),
+    min_image_size: parseInt(getVal('cfg-min_image_size')) || 0,
+    max_image_size: parseInt(getVal('cfg-max_image_size')) || 0,
+    min_image_width: parseInt(getVal('cfg-min_image_width')) || 0,
+    min_image_height: parseInt(getVal('cfg-min_image_height')) || 0,
+    max_images_per_page: parseInt(getVal('cfg-max_images_per_page')) || 0,
+    image_extensions: exts,
+    skip_data_urls: getCheck('cfg-skip_data_urls'),
+    only_same_domain: getCheck('cfg-only_same_domain'),
+    custom_save_root: getVal('cfg-custom_save_root') || '',
+    create_subfolder_per_page: getCheck('cfg-create_subfolder_per_page'),
+    filename_prefix: getVal('cfg-filename_prefix') || '',
+    filename_pattern: getVal('cfg-filename_pattern') || 'original',
+    overwrite_existing: getCheck('cfg-overwrite_existing'),
+    save_html: getCheck('cfg-save_html'),
+    max_generated_urls: parseInt(getVal('cfg-max_generated_urls')) || 5000,
+    port: parseInt(getVal('cfg-port')) || 5000,
+  };
+}
+
+function getVal(id) { return document.getElementById(id)?.value || ''; }
+function getCheck(id) { return !!document.getElementById(id)?.checked; }
+
+async function resetConfig() {
+  try {
+    const resp = await fetch('/api/default-config');
+    const defaults = await resp.json();
+    await fetch('/api/config', {
+      method: 'POST', headers: {'Content-Type': 'application/json'},
+      body: JSON.stringify(defaults)
+    });
+    await loadConfig();
+    showToast('✅ 已恢复默认配置', 'success');
+  } catch(e) {
+    showToast('❌ 恢复失败: ' + e.message, 'error');
+  }
+}
+
+// ════════════════════════════════════════════════════════
+// 初始化
+// ════════════════════════════════════════════════════════
+document.addEventListener('DOMContentLoaded', () => {
+  loadConfig();
+  addPaginationVar({name: 'page', mode: 'range', start: 1, end: 10, step: 1});
+  addTemplateVar({name: 'page', mode: 'range', start: 1, end: 10, step: 1});
+});
+</script>
+
+</body>
+</html>
