@@ -1081,6 +1081,27 @@ body {
       </div>
     </div>
 
+    <!-- 下载完成行为 -->
+    <div class="config-section">
+      <div class="config-title">✅ 下载完成行为</div>
+      <div class="config-switches">
+        <div class="switch-row">
+          <div class="sw-info">
+            <div class="sw-label">下载完成后展开预览</div>
+            <div class="sw-desc">任务结束后自动展开结果统计和文件列表</div>
+          </div>
+          <label class="switch"><input type="checkbox" id="cfg-preview_after_download" onchange="autoSaveConfig()"><span class="slider"></span></label>
+        </div>
+        <div class="switch-row">
+          <div class="sw-info">
+            <div class="sw-label">自动滚动到结果区域</div>
+            <div class="sw-desc">下载完成后自动滚动到结果面板位置</div>
+          </div>
+          <label class="switch"><input type="checkbox" id="cfg-auto_show_result" onchange="autoSaveConfig()"><span class="slider"></span></label>
+        </div>
+      </div>
+    </div>
+
     <!-- 其他 -->
     <div class="config-section">
       <div class="config-title">⚙️ 其他</div>
@@ -1212,13 +1233,27 @@ function pollProgress(taskId, prefix, resultContainerId) {
       if (data.status === 'done') {
         clearInterval(interval);
         if (statusBadge) { statusBadge.className = 'progress-badge done'; statusBadge.textContent = '✅ 完成'; }
+
+        const previewEnabled = _configCache.preview_after_download !== false;
+        const autoScroll = _configCache.auto_show_result !== false;
+
         setTimeout(async () => {
           try {
             const r = await fetch('/api/result/' + taskId);
             const res = await r.json();
             if (res.result && resultContainerId) {
-              showResult(res.result, resultContainerId);
-              showToast('✅ 下载完成！', 'success');
+              if (previewEnabled) {
+                showResult(res.result, resultContainerId);
+                showToast('✅ 下载完成！', 'success');
+                if (autoScroll) {
+                  setTimeout(() => {
+                    const el = document.getElementById(resultContainerId);
+                    if (el) el.scrollIntoView({ behavior: 'smooth', block: 'start' });
+                  }, 200);
+                }
+              } else {
+                showToast('✅ 下载完成！', 'success');
+              }
             }
           } catch(e) {}
         }, 300);
@@ -1850,6 +1885,8 @@ async function loadConfig() {
     setCheck('cfg-create_subfolder_per_page', cfg.create_subfolder_per_page !== false);
     setCheck('cfg-overwrite_existing', cfg.overwrite_existing || false);
     setCheck('cfg-save_html', cfg.save_html || false);
+    setCheck('cfg-preview_after_download', cfg.preview_after_download !== false);
+    setCheck('cfg-auto_show_result', cfg.auto_show_result !== false);
     setVal('cfg-max_generated_urls', cfg.max_generated_urls || 5000);
     setVal('cfg-port', cfg.port || 5000);
   } catch(e) {
@@ -1918,6 +1955,8 @@ function collectConfig() {
     filename_pattern: getVal('cfg-filename_pattern') || 'original',
     overwrite_existing: getCheck('cfg-overwrite_existing'),
     save_html: getCheck('cfg-save_html'),
+    preview_after_download: getCheck('cfg-preview_after_download'),
+    auto_show_result: getCheck('cfg-auto_show_result'),
     max_generated_urls: parseInt(getVal('cfg-max_generated_urls')) || 5000,
     port: parseInt(getVal('cfg-port')) || 5000,
   };

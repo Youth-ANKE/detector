@@ -58,6 +58,10 @@ DEFAULT_CONFIG = {
     "save_html": False,               # 同时保存页面 HTML
     "max_images_per_page": 0,         # 每页最大下载图片数，0 不限制
 
+    # ======== 下载完成后行为 ========
+    "preview_after_download": True,   # 下载完成后自动预览（展开结果区域）
+    "auto_show_result": True,         # 下载完成后自动滚动到结果区域
+
     # ======== URL 生成设置 ========
     "max_generated_urls": 5000,       # URL 生成数量上限
 
